@@ -9,6 +9,9 @@ export default function InterviewerDashboard() {
         <Link to="announcements">Announcements</Link>
         <Link to="candidates">Candidates</Link>
         <Link to="tasks">Tasks</Link>
+        <a href="/api/v2/export/applications" target="_blank" rel="noreferrer">
+          Export Applications
+        </a>
       </div>
       <Outlet />
     </section>

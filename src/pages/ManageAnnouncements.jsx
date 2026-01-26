@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { listAnnouncements, createAnnouncement, updateAnnouncement, pinAnnouncement } from "../api/announcements.js";
+import {
+  listAnnouncements,
+  createAnnouncement,
+  updateAnnouncement,
+  pinAnnouncement,
+  deleteAnnouncement
+} from "../api/announcements.js";
 import MarkdownRenderer from "../components/MarkdownRenderer.jsx";
 
 export default function ManageAnnouncements() {
@@ -50,6 +56,16 @@ export default function ManageAnnouncements() {
     }
   };
 
+  const onDelete = async (id) => {
+    setStatus("");
+    try {
+      await deleteAnnouncement(id);
+      load();
+    } catch (error) {
+      setStatus(error.message || "Failed to delete announcement.");
+    }
+  };
+
   return (
     <section>
       <h2>Manage Announcements</h2>
@@ -87,6 +103,9 @@ export default function ManageAnnouncements() {
               </button>
               <button type="button" onClick={() => onUpdate(item.id)}>
                 Update with form
+              </button>
+              <button type="button" onClick={() => onDelete(item.id)}>
+                Delete
               </button>
             </div>
           </article>

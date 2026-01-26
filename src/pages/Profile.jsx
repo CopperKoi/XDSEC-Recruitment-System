@@ -8,9 +8,10 @@ export default function Profile() {
   const [profile, setProfile] = useState({
     email: "",
     nickname: "",
-    signature: ""
+    signature: "",
+    emailCode: ""
   });
-  const [passwordForm, setPasswordForm] = useState({ old_password: "", new_password: "" });
+  const [passwordForm, setPasswordForm] = useState({ oldPassword: "", newPassword: "" });
   const [status, setStatus] = useState("");
 
   useEffect(() => {
@@ -18,11 +19,21 @@ export default function Profile() {
       setProfile({
         email: user.email || "",
         nickname: user.nickname || "",
-        signature: user.signature || ""
+        signature: user.signature || "",
+        emailCode: ""
       });
     }
   }, [user]);
 
+  const sendCode = async () => {
+    setStatus("Sending code...");
+    try {
+      await authApi.requestEmailCode({ email: profile.email, purpose: "profile" });
+      setStatus("Code sent.");
+    } catch (error) {
+      setStatus(error.message || "Failed to send code.");
+    }
+  };
   const onSaveProfile = async (event) => {
     event.preventDefault();
     setStatus("");
@@ -61,6 +72,19 @@ export default function Profile() {
             required
           />
         </label>
+        <div className="row">
+          <label>
+            Email Code
+            <input
+              value={profile.emailCode}
+              onChange={(event) => setProfile({ ...profile, emailCode: event.target.value })}
+              required
+            />
+          </label>
+          <button type="button" onClick={sendCode} disabled={!profile.email}>
+            Send Code
+          </button>
+        </div>
         <label>
           Nickname
           <input
@@ -87,8 +111,8 @@ export default function Profile() {
           Old Password
           <input
             type="password"
-            value={passwordForm.old_password}
-            onChange={(event) => setPasswordForm({ ...passwordForm, old_password: event.target.value })}
+            value={passwordForm.oldPassword}
+            onChange={(event) => setPasswordForm({ ...passwordForm, oldPassword: event.target.value })}
             required
           />
         </label>
@@ -96,8 +120,8 @@ export default function Profile() {
           New Password
           <input
             type="password"
-            value={passwordForm.new_password}
-            onChange={(event) => setPasswordForm({ ...passwordForm, new_password: event.target.value })}
+            value={passwordForm.newPassword}
+            onChange={(event) => setPasswordForm({ ...passwordForm, newPassword: event.target.value })}
             required
           />
         </label>

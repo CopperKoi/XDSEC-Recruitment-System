@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import * as authApi from "../api/auth.js";
-import { clearToken } from "../api/client.js";
+import { clearCsrfToken } from "../api/client.js";
 
 const AuthContext = createContext(null);
 const USER_KEY = "xdsec_user";
@@ -25,7 +25,7 @@ export function AuthProvider({ children }) {
       }
     } catch (error) {
       setUser(null);
-      clearToken();
+      clearCsrfToken();
     } finally {
       setLoading(false);
     }
@@ -37,7 +37,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (payload) => {
     const data = await authApi.login(payload);
-    const nextUser = data?.data?.userInfo || null;
+    const nextUser = data?.data?.user || null;
     setUser(nextUser);
     if (nextUser) {
       window.localStorage.setItem(USER_KEY, JSON.stringify(nextUser));

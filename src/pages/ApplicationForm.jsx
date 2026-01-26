@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { submitApplication, getMyApplication } from "../api/applications.js";
+import { submitApplication, getMyApplication, deleteMyApplication } from "../api/applications.js";
 import MarkdownRenderer from "../components/MarkdownRenderer.jsx";
 
 const DIRECTIONS = ["Web", "Pwn", "Reverse", "Crypto", "Misc", "Dev", "Art"];
@@ -44,6 +44,26 @@ export default function ApplicationForm() {
       setStatus("Application submitted.");
     } catch (error) {
       setStatus(error.message || "Submission failed.");
+    }
+  };
+
+  const onDelete = async () => {
+    setStatus("");
+    try {
+      await deleteMyApplication();
+      setForm({
+        realName: "",
+        phone: "",
+        gender: "",
+        department: "",
+        major: "",
+        studentId: "",
+        directions: [],
+        resume: ""
+      });
+      setStatus("Application deleted.");
+    } catch (error) {
+      setStatus(error.message || "Delete failed.");
     }
   };
 
@@ -124,6 +144,7 @@ export default function ApplicationForm() {
           />
         </label>
         <button type="submit">Submit Application</button>
+        <button type="button" onClick={onDelete}>Delete My Application</button>
       </form>
       <div className="divider" />
       <h2>Resume Preview</h2>

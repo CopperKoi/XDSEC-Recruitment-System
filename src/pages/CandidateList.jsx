@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { listUsers, updateRole, updatePassedDirections } from "../api/users.js";
+import { listUsers, updateRole, updatePassedDirections, deleteUser } from "../api/users.js";
 import { gravatarUrl } from "../utils/gravatar.js";
 import { updateApplicationStatus } from "../api/applications.js";
 import MarkdownRenderer from "../components/MarkdownRenderer.jsx";
@@ -42,6 +42,16 @@ export default function CandidateList() {
       load();
     } catch (error) {
       setStatus(error.message || "Failed to update role.");
+    }
+  };
+
+  const removeUser = async (userId) => {
+    setStatus("");
+    try {
+      await deleteUser(userId);
+      load();
+    } catch (error) {
+      setStatus(error.message || "Failed to delete user.");
     }
   };
 
@@ -95,6 +105,7 @@ export default function CandidateList() {
                 </div>
               </div>
               <button type="button" onClick={() => promote(user.id)}>Grant Interviewer</button>
+              <button type="button" onClick={() => removeUser(user.id)}>Delete User</button>
             </header>
             {user.application && (
               <div className="panel">
@@ -110,8 +121,8 @@ export default function CandidateList() {
             )}
             <div className="panel">
               <p><strong>Passed Directions:</strong> {(user.passedDirections || []).join(", ") || "None"}</p>
-              {user.passedDirectionsBy && (
-                <p className="meta">Updated by {user.passedDirectionsBy}</p>
+              {user.passedDirectionsBy && user.passedDirectionsBy.length > 0 && (
+                <p className="meta">Updated by {user.passedDirectionsBy.join(", ")}</p>
               )}
               <fieldset>
                 <legend>Set passed directions</legend>

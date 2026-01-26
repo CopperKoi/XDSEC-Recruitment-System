@@ -10,9 +10,20 @@ export default function Register() {
     password: "",
     email: "",
     nickname: "",
-    signature: ""
+    signature: "",
+    emailCode: ""
   });
   const [status, setStatus] = useState({ loading: false, message: "" });
+
+  const sendCode = async () => {
+    setStatus({ loading: true, message: "Sending code..." });
+    try {
+      await authApi.requestEmailCode({ email: form.email, purpose: "register" });
+      setStatus({ loading: false, message: "Code sent. Check your email." });
+    } catch (error) {
+      setStatus({ loading: false, message: error.message || "Failed to send code." });
+    }
+  };
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -40,6 +51,19 @@ export default function Register() {
             required
           />
         </label>
+        <div className="row">
+          <label>
+            Email Code
+            <input
+              value={form.emailCode}
+              onChange={(event) => setForm({ ...form, emailCode: event.target.value })}
+              required
+            />
+          </label>
+          <button type="button" onClick={sendCode} disabled={!form.email || status.loading}>
+            Send Code
+          </button>
+        </div>
         <label>
           Password
           <input

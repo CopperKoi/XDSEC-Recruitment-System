@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { listTasks, createTask, updateTask } from "../api/tasks.js";
+import { listTasks, createTask, updateTask, deleteTask } from "../api/tasks.js";
 import MarkdownRenderer from "../components/MarkdownRenderer.jsx";
 
 export default function ManageTasks() {
@@ -36,6 +36,16 @@ export default function ManageTasks() {
       load();
     } catch (error) {
       setStatus(error.message || "Failed to update task.");
+    }
+  };
+
+  const onDelete = async (taskId) => {
+    setStatus("");
+    try {
+      await deleteTask(taskId);
+      load();
+    } catch (error) {
+      setStatus(error.message || "Failed to delete task.");
     }
   };
 
@@ -85,6 +95,7 @@ export default function ManageTasks() {
               </>
             )}
             <button type="button" onClick={() => onUpdate(task.id)}>Update with form</button>
+            <button type="button" onClick={() => onDelete(task.id)}>Delete</button>
           </article>
         ))}
       </div>

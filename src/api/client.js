@@ -1,18 +1,18 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v2";
-const TOKEN_KEY = "xdsec_token";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api/v2";
+const CSRF_KEY = "xdsec_csrf";
 
-export function getToken() {
-  return window.localStorage.getItem(TOKEN_KEY) || "";
+export function getCsrfToken() {
+  return window.localStorage.getItem(CSRF_KEY) || "";
 }
 
-export function setToken(token) {
+export function setCsrfToken(token) {
   if (token) {
-    window.localStorage.setItem(TOKEN_KEY, token);
+    window.localStorage.setItem(CSRF_KEY, token);
   }
 }
 
-export function clearToken() {
-  window.localStorage.removeItem(TOKEN_KEY);
+export function clearCsrfToken() {
+  window.localStorage.removeItem(CSRF_KEY);
 }
 
 export async function request(path, options = {}) {
@@ -22,14 +22,15 @@ export async function request(path, options = {}) {
     ...(options.headers || {})
   };
 
-  const token = getToken();
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+  const csrfToken = getCsrfToken();
+  if (csrfToken) {
+    headers["X-CSRF-Token"] = csrfToken;
   }
 
   const response = await fetch(url, {
     ...options,
-    headers
+    headers,
+    credentials: "include"
   });
 
   const contentType = response.headers.get("content-type") || "";

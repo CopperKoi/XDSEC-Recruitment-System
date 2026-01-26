@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ id: "", password: "" });
   const [error, setError] = useState("");
 
   const onSubmit = async (event) => {
@@ -25,11 +25,10 @@ export default function Login() {
       {error && <p className="error">{error}</p>}
       <form onSubmit={onSubmit}>
         <label>
-          Email
+          ID
           <input
-            type="email"
-            value={form.email}
-            onChange={(event) => setForm({ ...form, email: event.target.value })}
+            value={form.id}
+            onChange={(event) => setForm({ ...form, id: event.target.value })}
             autoComplete="username"
             required
           />
