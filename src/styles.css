@@ -168,6 +168,7 @@ select {
   font-size: 14px;
   background: var(--page-surface);
   color: var(--text-primary);
+  font-family: inherit;
 }
 
 button {
@@ -178,6 +179,7 @@ button {
   color: #ffffff;
   font-weight: 600;
   cursor: pointer;
+  font-family: inherit;
 }
 
 button.link-button {
