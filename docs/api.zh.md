@@ -51,7 +51,7 @@ Authorization: Bearer {token}
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | email | string | 是 | 邮箱地址（最大30字符），需符合RFC 5322标准 |
-| password | string | 是 | 密码（需先在前端进行SHA256哈希），64位十六进制字符串 |
+| password | string | 是 | 密码明文（至少8位，建议通过HTTPS传输） |
 | nickname | string | 是 | 昵称，3-20字符，仅支持ASCII字符，不能包含空格 |
 | signature | string | 是 | 签名，最大30字符 |
 
@@ -60,7 +60,7 @@ Authorization: Bearer {token}
 ```json
 {
   "email": "user@example.com",
-  "password": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd27a73b5e5e8a0b123",
+  "password": "P@ssw0rd123",
   "nickname": "john_doe",
   "signature": "Hello world"
 }
@@ -99,14 +99,14 @@ Authorization: Bearer {token}
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | email | string | 是 | 邮箱地址 |
-| password | string | 是 | 密码（需先在前端进行SHA256哈希），64位十六进制字符串 |
+| password | string | 是 | 密码明文（至少8位，建议通过HTTPS传输） |
 
 **请求示例:**
 
 ```json
 {
   "email": "user@example.com",
-  "password": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd27a73b5e5e8a0b123"
+  "password": "P@ssw0rd123"
 }
 ```
 
@@ -149,15 +149,15 @@ Authorization: Bearer {token}
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| old_password | string | 是 | 旧密码（SHA256哈希） |
-| new_password | string | 是 | 新密码（SHA256哈希） |
+| oldPassword | string | 是 | 旧密码明文（至少8位） |
+| newPassword | string | 是 | 新密码明文（至少8位） |
 
 **请求示例:**
 
 ```json
 {
-  "old_password": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd27a73b5e5e8a0b123",
-  "new_password": "2c80e0e1e4f1d2e3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d"
+  "oldPassword": "P@ssw0rd123",
+  "newPassword": "N3wP@ssw0rd456"
 }
 ```
 
@@ -330,14 +330,14 @@ Authorization: Bearer {token}
 
 ## 安全说明
 
-1. **密码传输**: 密码必须在前端先进行SHA256哈希，然后再传输到后端
-2. **密码存储**: 后端使用bcrypt对密码进行二次哈希存储
+1. **密码传输**: 前端直接传输密码明文，必须通过HTTPS保障传输安全
+2. **密码存储**: 后端使用bcrypt对密码进行单向哈希存储
 3. **Token认证**: JWT Token有效期7天，过期后需重新登录
 4. **数据验证**:
    - 邮箱必须符合RFC 5322标准，最大30字符
    - 昵称仅支持ASCII字符（0-127），长度3-20，不能包含空格
    - 签名最大30字符
-   - 密码必须是64位十六进制字符串（SHA256格式）
+   - 密码至少8位，建议包含大小写字母与数字
 
 ---
 
@@ -346,7 +346,7 @@ Authorization: Bearer {token}
 | 错误信息 | 说明 |
 |----------|------|
 | 请求数据无效 | 请求参数格式错误或缺少必填字段 |
-| 传入的密码非法 | 密码不是64位十六进制字符串 |
+| 密码长度不能少于8位 | 密码长度不足 |
 | 传入的邮箱过长或非法 | 邮箱格式错误或超过30字符 |
 | 传入的昵称非法 | 昵称包含非ASCII字符、长度不在3-20范围内或包含空格 |
 | 传入的签名过长 | 签名超过30字符 |
