@@ -3,72 +3,76 @@
   font-family: "Anthropic Serif", "Times New Roman", "Noto Serif", serif;
   background: var(--page-bg);
   color: var(--text-primary);
-  --page-bg: #f5f7fb;
-  --page-bg-soft: #eef2f7;
+  --page-bg: #f8f6f3;
+  --page-bg-soft: #f1ede7;
   --page-surface: #ffffff;
-  --text-primary: #1c2430;
-  --text-muted: #5d6a7b;
-  --border: #e5e9f0;
-  --input-border: #d4dae4;
-  --brand: #1c61e7;
-  --brand-soft: #9bb7f2;
-  --card-shadow: 0 8px 30px rgba(15, 30, 70, 0.08);
-  --tag-bg: #eef3ff;
-  --hint: #4b6b2f;
-  --error: #b42318;
+  --text-primary: #2b2a27;
+  --text-muted: #6b6760;
+  --border: #e6e0d7;
+  --input-border: #dcd5cb;
+  --brand: #7a6ca9;
+  --brand-soft: #c9c1df;
+  --card-shadow: 0 12px 30px rgba(46, 38, 81, 0.06);
+  --tag-bg: #f0ece6;
+  --hint: #3f5f36;
+  --error: #9f2f26;
+  --link: #5f5390;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --page-bg: #0f1218;
-    --page-bg-soft: #141926;
-    --page-surface: #171c26;
-    --text-primary: #eef2f7;
-    --text-muted: #9aa5b1;
-    --border: #273244;
-    --input-border: #2f3b4f;
-    --brand: #5b8dff;
-    --brand-soft: #3a4f7f;
-    --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
-    --tag-bg: #222c3d;
-    --hint: #9bcf7a;
-    --error: #ff6b6b;
+    --page-bg: #121112;
+    --page-bg-soft: #1a171b;
+    --page-surface: #1f1c22;
+    --text-primary: #f3f1ee;
+    --text-muted: #b7b2ab;
+    --border: #2f2a33;
+    --input-border: #3a3340;
+    --brand: #7a6ca9;
+    --brand-soft: #4c456a;
+    --card-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    --tag-bg: #2a2530;
+    --hint: #b4d39b;
+    --error: #ff8a7a;
+    --link: #b9acd9;
   }
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --page-bg: #f5f7fb;
-  --page-bg-soft: #eef2f7;
+  --page-bg: #f8f6f3;
+  --page-bg-soft: #f1ede7;
   --page-surface: #ffffff;
-  --text-primary: #1c2430;
-  --text-muted: #5d6a7b;
-  --border: #e5e9f0;
-  --input-border: #d4dae4;
-  --brand: #1c61e7;
-  --brand-soft: #9bb7f2;
-  --card-shadow: 0 8px 30px rgba(15, 30, 70, 0.08);
-  --tag-bg: #eef3ff;
-  --hint: #4b6b2f;
-  --error: #b42318;
+  --text-primary: #2b2a27;
+  --text-muted: #6b6760;
+  --border: #e6e0d7;
+  --input-border: #dcd5cb;
+  --brand: #7a6ca9;
+  --brand-soft: #c9c1df;
+  --card-shadow: 0 12px 30px rgba(46, 38, 81, 0.06);
+  --tag-bg: #f0ece6;
+  --hint: #3f5f36;
+  --error: #9f2f26;
+  --link: #5f5390;
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --page-bg: #0f1218;
-  --page-bg-soft: #141926;
-  --page-surface: #171c26;
-  --text-primary: #eef2f7;
-  --text-muted: #9aa5b1;
-  --border: #273244;
-  --input-border: #2f3b4f;
-  --brand: #5b8dff;
-  --brand-soft: #3a4f7f;
-  --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
-  --tag-bg: #222c3d;
-  --hint: #9bcf7a;
-  --error: #ff6b6b;
+  --page-bg: #121112;
+  --page-bg-soft: #1a171b;
+  --page-surface: #1f1c22;
+  --text-primary: #f3f1ee;
+  --text-muted: #b7b2ab;
+  --border: #2f2a33;
+  --input-border: #3a3340;
+  --brand: #7a6ca9;
+  --brand-soft: #4c456a;
+  --card-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  --tag-bg: #2a2530;
+  --hint: #b4d39b;
+  --error: #ff8a7a;
+  --link: #b9acd9;
 }
 
 * {
@@ -77,12 +81,16 @@
 
 body {
   margin: 0;
-  background: linear-gradient(180deg, var(--page-bg-soft) 0%, var(--page-bg) 100%);
+  background: var(--page-bg);
 }
 
 a {
-  color: inherit;
+  color: var(--link);
   text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 
 .app {
@@ -95,7 +103,7 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 32px;
+  padding: 18px 32px;
   background: var(--page-surface);
   border-bottom: 1px solid var(--border);
   position: sticky;
@@ -104,7 +112,7 @@ a {
 }
 
 .nav a {
-  margin-right: 16px;
+  margin-right: 18px;
   font-weight: 600;
 }
 
@@ -130,8 +138,8 @@ a {
 }
 
 .container {
-  max-width: 1100px;
-  margin: 24px auto 64px;
+  max-width: 1080px;
+  margin: 32px auto 72px;
   padding: 0 24px;
 }
 
@@ -141,11 +149,12 @@ main.container {
 
 .form-card {
   background: var(--page-surface);
-  padding: 24px;
-  border-radius: 12px;
+  padding: 28px;
+  border-radius: 16px;
   box-shadow: var(--card-shadow);
   width: min(520px, 100%);
   max-width: 520px;
+  border: 1px solid var(--border);
 }
 
 .form-card form {
@@ -163,7 +172,7 @@ input,
 textarea,
 select {
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid var(--input-border);
   font-size: 14px;
   background: var(--page-surface);
@@ -171,21 +180,31 @@ select {
   font-family: inherit;
 }
 
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(122, 108, 169, 0.2);
+}
+
 button {
   padding: 10px 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: none;
   background: var(--brand);
   color: #ffffff;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
+  box-shadow: 0 8px 18px rgba(122, 108, 169, 0.25);
 }
 
 button.link-button {
   background: none;
-  color: var(--brand);
+  color: var(--link);
   padding: 0;
+  box-shadow: none;
 }
 
 button:disabled {
@@ -221,7 +240,7 @@ button:disabled {
 }
 
 .grid.two {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
 .full {
@@ -230,9 +249,10 @@ button:disabled {
 
 .card {
   background: var(--page-surface);
-  padding: 20px;
-  border-radius: 12px;
+  padding: 22px;
+  border-radius: 16px;
   box-shadow: var(--card-shadow);
+  border: 1px solid var(--border);
 }
 
 .avatar {
@@ -259,7 +279,7 @@ button:disabled {
 
 .tag {
   background: var(--tag-bg);
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 999px;
   font-size: 12px;
 }
@@ -277,7 +297,7 @@ button:disabled {
 .divider {
   height: 1px;
   background: var(--border);
-  margin: 24px 0;
+  margin: 28px 0;
 }
 
 .subnav {
@@ -289,7 +309,7 @@ button:disabled {
 .footer {
   border-top: 1px solid var(--border);
   background: var(--page-surface);
-  padding: 16px 0;
+  padding: 20px 0;
 }
 
 .footer-inner {
