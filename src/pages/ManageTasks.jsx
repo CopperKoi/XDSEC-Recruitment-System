@@ -10,7 +10,6 @@ export default function ManageTasks() {
   const [userQuery, setUserQuery] = useState("");
   const [userOptions, setUserOptions] = useState([]);
   const [editingId, setEditingId] = useState("");
-  const [userMap, setUserMap] = useState({});
 
   const load = () => {
     listTasks({ scope: "all" })
@@ -20,18 +19,6 @@ export default function ManageTasks() {
 
   useEffect(() => {
     load();
-  }, []);
-
-  useEffect(() => {
-    listUsers({})
-      .then((data) => {
-        const map = {};
-        (data.items || []).forEach((user) => {
-          map[user.id] = user.nickname || user.email || user.id;
-        });
-        setUserMap(map);
-      })
-      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -144,7 +131,7 @@ export default function ManageTasks() {
           <article key={task.id} className="card">
             <h3>{task.title}</h3>
             <div className="meta">
-              目标 {userMap[task.targetUserId] || task.targetUserId} · {new Date(task.updatedAt).toLocaleString()}
+              目标 {task.targetUserId} · {new Date(task.updatedAt).toLocaleString()}
             </div>
             <MarkdownRenderer content={task.description} />
             {task.report && (
