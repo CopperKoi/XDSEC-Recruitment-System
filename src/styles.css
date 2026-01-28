@@ -178,6 +178,12 @@ select {
   background: var(--page-surface);
   color: var(--text-primary);
   font-family: inherit;
+  width: 100%;
+}
+
+textarea {
+  resize: vertical;
+  max-width: 100%;
 }
 
 input:focus,

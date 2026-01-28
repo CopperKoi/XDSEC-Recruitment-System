@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { listTasks, submitTaskReport } from "../api/tasks.js";
+import { listUsers } from "../api/users.js";
 import MarkdownRenderer from "../components/MarkdownRenderer.jsx";
 
 export default function MyTasks() {
   const [tasks, setTasks] = useState([]);
   const [report, setReport] = useState({});
   const [status, setStatus] = useState("");
+  const [userMap, setUserMap] = useState({});
 
   const loadTasks = () => {
     listTasks({ scope: "mine" })
@@ -15,6 +17,18 @@ export default function MyTasks() {
 
   useEffect(() => {
     loadTasks();
+  }, []);
+
+  useEffect(() => {
+    listUsers({})
+      .then((data) => {
+        const map = {};
+        (data.items || []).forEach((user) => {
+          map[user.id] = user.nickname || user.email || user.id;
+        });
+        setUserMap(map);
+      })
+      .catch(() => {});
   }, []);
 
   const submitReport = async (taskId) => {
@@ -35,7 +49,9 @@ export default function MyTasks() {
       {tasks.map((task) => (
         <article key={task.id} className="card">
           <h2>{task.title}</h2>
-          <div className="meta">分配人 {task.assignedBy} · {new Date(task.createdAt).toLocaleString()}</div>
+          <div className="meta">
+            分配人 {userMap[task.assignedBy] || task.assignedBy} · {new Date(task.createdAt).toLocaleString()}
+          </div>
           <MarkdownRenderer content={task.description} />
           <label className="full">
             报告（支持 Markdown）

@@ -9,6 +9,8 @@ export default function ManageTasks() {
   const [status, setStatus] = useState("");
   const [userQuery, setUserQuery] = useState("");
   const [userOptions, setUserOptions] = useState([]);
+  const [editingId, setEditingId] = useState("");
+  const [userMap, setUserMap] = useState({});
 
   const load = () => {
     listTasks({ scope: "all" })
@@ -21,6 +23,18 @@ export default function ManageTasks() {
   }, []);
 
   useEffect(() => {
+    listUsers({})
+      .then((data) => {
+        const map = {};
+        (data.items || []).forEach((user) => {
+          map[user.id] = user.nickname || user.email || user.id;
+        });
+        setUserMap(map);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     const timer = window.setTimeout(() => {
       listUsers({ role: "interviewee", q: userQuery })
         .then((data) => setUserOptions(data.items || []))
@@ -29,26 +43,31 @@ export default function ManageTasks() {
     return () => window.clearTimeout(timer);
   }, [userQuery]);
 
-  const onCreate = async (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
     setStatus("");
     try {
-      await createTask(form);
+      if (editingId) {
+        await updateTask(editingId, form);
+      } else {
+        await createTask(form);
+      }
       setForm({ title: "", description: "", targetUserId: "" });
+      setEditingId("");
       load();
     } catch (error) {
-      setStatus(error.message || "任务创建失败。");
+      setStatus(error.message || (editingId ? "任务更新失败。" : "任务创建失败。"));
     }
   };
 
-  const onUpdate = async (taskId) => {
-    setStatus("");
-    try {
-      await updateTask(taskId, form);
-      load();
-    } catch (error) {
-      setStatus(error.message || "任务更新失败。");
-    }
+  const onEdit = (task) => {
+    setForm({
+      title: task.title || "",
+      description: task.description || "",
+      targetUserId: task.targetUserId || ""
+    });
+    setEditingId(task.id);
+    setStatus("正在编辑任务，发布后将覆盖原内容。");
   };
 
   const onDelete = async (taskId) => {
@@ -65,7 +84,7 @@ export default function ManageTasks() {
     <section>
       <h2>任务管理</h2>
       {status && <p className="hint">{status}</p>}
-      <form className="form-card" onSubmit={onCreate}>
+      <form className="form-card" onSubmit={onSubmit}>
         <label>
           标题
           <input
@@ -89,7 +108,11 @@ export default function ManageTasks() {
                 key={user.id}
                 type="button"
                 className="search-option"
-                onClick={() => setForm({ ...form, targetUserId: user.id })}
+                onClick={() => {
+                  setForm({ ...form, targetUserId: user.id });
+                  setUserQuery("");
+                  setUserOptions([]);
+                }}
               >
                 {user.nickname || user.email} · {user.id}
               </button>
@@ -113,14 +136,16 @@ export default function ManageTasks() {
             required
           />
         </label>
-        <button type="submit">布置任务</button>
+        <button type="submit">{editingId ? "发布修改" : "布置任务"}</button>
       </form>
 
       <div className="grid two">
         {items.map((task) => (
           <article key={task.id} className="card">
             <h3>{task.title}</h3>
-            <div className="meta">目标 {task.targetUserId} · {new Date(task.updatedAt).toLocaleString()}</div>
+            <div className="meta">
+              目标 {userMap[task.targetUserId] || task.targetUserId} · {new Date(task.updatedAt).toLocaleString()}
+            </div>
             <MarkdownRenderer content={task.description} />
             {task.report && (
               <>
@@ -128,7 +153,7 @@ export default function ManageTasks() {
                 <MarkdownRenderer content={task.report} />
               </>
             )}
-            <button type="button" onClick={() => onUpdate(task.id)}>用表单更新</button>
+            <button type="button" onClick={() => onEdit(task)}>编辑</button>
             <button type="button" onClick={() => onDelete(task.id)}>删除</button>
           </article>
         ))}

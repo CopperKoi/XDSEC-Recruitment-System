@@ -11,6 +11,7 @@ import MarkdownRenderer from "../components/MarkdownRenderer.jsx";
 export default function ManageAnnouncements() {
   const [items, setItems] = useState([]);
   const [form, setForm] = useState({ title: "", content: "" });
+  const [editingId, setEditingId] = useState("");
   const [status, setStatus] = useState("");
 
   const load = () => {
@@ -23,27 +24,27 @@ export default function ManageAnnouncements() {
     load();
   }, []);
 
-  const onCreate = async (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
     setStatus("");
     try {
-      await createAnnouncement(form);
+      if (editingId) {
+        await updateAnnouncement(editingId, form);
+      } else {
+        await createAnnouncement(form);
+      }
       setForm({ title: "", content: "" });
+      setEditingId("");
       load();
     } catch (error) {
-      setStatus(error.message || "创建公告失败。");
+      setStatus(error.message || (editingId ? "更新公告失败。" : "创建公告失败。"));
     }
   };
 
-  const onUpdate = async (id) => {
-    setStatus("");
-    try {
-      await updateAnnouncement(id, form);
-      setForm({ title: "", content: "" });
-      load();
-    } catch (error) {
-      setStatus(error.message || "更新公告失败。");
-    }
+  const onEdit = (item) => {
+    setForm({ title: item.title || "", content: item.content || "" });
+    setEditingId(item.id);
+    setStatus("正在编辑公告，发布后将覆盖原内容。");
   };
 
   const onPin = async (id, pinned) => {
@@ -70,7 +71,7 @@ export default function ManageAnnouncements() {
     <section>
       <h2>公告管理</h2>
       {status && <p className="hint">{status}</p>}
-      <form className="form-card" onSubmit={onCreate}>
+      <form className="form-card" onSubmit={onSubmit}>
         <label>
           标题
           <input
@@ -88,7 +89,7 @@ export default function ManageAnnouncements() {
             required
           />
         </label>
-        <button type="submit">发布</button>
+        <button type="submit">{editingId ? "发布修改" : "发布"}</button>
       </form>
 
       <div className="grid two">
@@ -101,8 +102,8 @@ export default function ManageAnnouncements() {
               <button type="button" onClick={() => onPin(item.id, !item.pinned)}>
                 {item.pinned ? "取消置顶" : "置顶"}
               </button>
-              <button type="button" onClick={() => onUpdate(item.id)}>
-                使用表单更新
+              <button type="button" onClick={() => onEdit(item)}>
+                编辑
               </button>
               <button type="button" onClick={() => onDelete(item.id)}>
                 删除

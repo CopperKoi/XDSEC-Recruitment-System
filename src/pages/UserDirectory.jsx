@@ -55,7 +55,7 @@ export default function UserDirectory() {
             {user.directions && (
               <p>方向：{(user.directions || []).join(", ")}</p>
             )}
-            {user.passedDirections && (
+            {user.role === "interviewee" && user.passedDirections && (
               <p>通过方向：{(user.passedDirections || []).join(", ")}</p>
             )}
             {user.status && <p>状态：{statusLabels[user.status] || user.status}</p>}
