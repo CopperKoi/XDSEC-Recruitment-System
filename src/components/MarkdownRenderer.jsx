@@ -12,9 +12,13 @@ export default function MarkdownRenderer({ content }) {
   const sanitized = useMemo(() => {
     const renderer = new marked.Renderer();
     renderer.code = (code, language) => {
+      const safeLanguage =
+        language && /^[a-z0-9+-]+$/i.test(language) && hljs.getLanguage(language)
+          ? language
+          : "";
       let highlighted = "";
-      if (language && hljs.getLanguage(language)) {
-        highlighted = hljs.highlight(code, { language }).value;
+      if (safeLanguage) {
+        highlighted = hljs.highlight(code, { language: safeLanguage }).value;
       } else {
         highlighted = hljs.highlightAuto(code).value;
       }
@@ -28,12 +32,26 @@ export default function MarkdownRenderer({ content }) {
             </div>
             <button class="code-copy" type="button">复制</button>
           </div>
-          <pre><code class="hljs ${language ? `language-${language}` : ""}">${highlighted}</code></pre>
+          <pre><code class="hljs ${safeLanguage ? `language-${safeLanguage}` : ""}">${highlighted}</code></pre>
         </div>
       `;
     };
+    renderer.link = (href, title, text) => {
+      const titleAttr = title ? ` title="${title}"` : "";
+      return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
+    };
     const html = marked.parse(content || "", { renderer });
-    return DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+    DOMPurify.addHook("afterSanitizeAttributes", (node) => {
+      if (node.tagName === "A" && node.getAttribute("target") === "_blank") {
+        const rel = (node.getAttribute("rel") || "").split(" ");
+        if (!rel.includes("noopener")) rel.push("noopener");
+        if (!rel.includes("noreferrer")) rel.push("noreferrer");
+        node.setAttribute("rel", rel.filter(Boolean).join(" "));
+      }
+    });
+    const clean = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+    DOMPurify.removeAllHooks();
+    return clean;
   }, [content]);
 
   return (
