@@ -9,6 +9,17 @@ export default function Layout({ children }) {
   const { user, logout } = useAuth();
   const [theme, setTheme] = useState(() => window.localStorage.getItem(THEME_KEY) || "system");
   const [accent, setAccent] = useState(() => window.localStorage.getItem(ACCENT_KEY) || "default");
+  const [showMobileBanner, setShowMobileBanner] = useState(false);
+
+  useEffect(() => {
+    const dismissed = window.localStorage.getItem("xdsec_mobile_banner_dismissed");
+    if (dismissed) return;
+    const ua = window.navigator.userAgent || "";
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+    if (isMobile) {
+      setShowMobileBanner(true);
+    }
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -98,6 +109,22 @@ export default function Layout({ children }) {
           )}
         </div>
       </header>
+      {showMobileBanner && (
+        <div className="mobile-banner">
+          <span>在电脑端浏览以获得更好体验</span>
+          <button
+            type="button"
+            className="link-button"
+            aria-label="关闭"
+            onClick={() => {
+              window.localStorage.setItem("xdsec_mobile_banner_dismissed", "1");
+              setShowMobileBanner(false);
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
       <main className="container">{children}</main>
       <footer className="footer">
         <div className="container footer-inner">

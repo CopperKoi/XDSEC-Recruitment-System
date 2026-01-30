@@ -493,6 +493,27 @@ p {
   justify-content: flex-end;
 }
 
+.mobile-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) clamp(20px, 4vw, 56px);
+  background: color-mix(in srgb, var(--brand-soft) 55%, var(--page-surface));
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+}
+
+.mobile-banner button {
+  color: var(--link);
+}
+
+.mobile-banner .link-button {
+  font-size: 18px;
+  line-height: 1;
+}
+
 .nav-link-group {
   display: inline-flex;
   align-items: center;
