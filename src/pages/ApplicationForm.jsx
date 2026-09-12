@@ -37,9 +37,21 @@ export default function ApplicationForm() {
     });
   };
 
+  const goToDirections = (event) => {
+    if (!event.currentTarget.form.reportValidity()) {
+      return;
+    }
+    setStep("directions");
+  };
+
   const onSubmit = async (event) => {
     event.preventDefault();
     setStatus("");
+    if (form.directions.length === 0) {
+      setStatus("请至少选择一个面试方向后再提交。");
+      setStep("directions");
+      return;
+    }
     try {
       await submitApplication(form);
       setStatus("申请已提交。");
@@ -174,6 +186,9 @@ export default function ApplicationForm() {
 
               {step === "directions" && (
                 <>
+                  <p className="hint full">
+                    基础资料已填写完成，请在下方选择面试方向并填写简历，之后点击“提交申请”完成投递。
+                  </p>
                   <fieldset>
                     <legend>面试方向（可多选）</legend>
                     <div className="tags">
@@ -191,6 +206,7 @@ export default function ApplicationForm() {
                   </fieldset>
                   <label className="full">
                     简历（支持 Markdown，可选）
+                    <span className="hint">可填写个人经历、技能与项目作品，下方会实时预览效果。</span>
                     <textarea
                       rows={6}
                       value={form.resume || ""}
@@ -202,9 +218,25 @@ export default function ApplicationForm() {
                 </>
               )}
               <div className="form-actions">
-                <button type="submit">{step === "directions" ? "提交申请" : "保存"}</button>
-                {step === "directions" && (
-                  <button type="button" onClick={onDelete}>删除我的申请</button>
+                {step === "basic" ? (
+                  <button type="button" onClick={goToDirections}>
+                    下一步：填写方向与简历
+                  </button>
+                ) : (
+                  <>
+                    <button type="button" onClick={() => setStep("basic")}>
+                      上一步
+                    </button>
+                    <button type="submit" disabled={form.directions.length === 0}>
+                      提交申请
+                    </button>
+                    <button type="button" onClick={onDelete}>
+                      删除我的申请
+                    </button>
+                    {form.directions.length === 0 && (
+                      <span className="hint">请先选择至少一个面试方向</span>
+                    )}
+                  </>
                 )}
               </div>
             </form>
