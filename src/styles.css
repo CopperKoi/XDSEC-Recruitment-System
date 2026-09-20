@@ -1024,6 +1024,28 @@ button:disabled {
   font-weight: 600;
 }
 
+.notice {
+  margin-bottom: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-1);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.notice-success {
+  color: var(--hint);
+  background: color-mix(in srgb, var(--hint) 12%, var(--page-surface));
+  border-color: color-mix(in srgb, var(--hint) 32%, var(--page-surface));
+}
+
+.notice-error {
+  color: var(--error);
+  background: color-mix(in srgb, var(--error) 12%, var(--page-surface));
+  border-color: color-mix(in srgb, var(--error) 32%, var(--page-surface));
+}
+
 .divider {
   height: 1px;
   background: var(--border);

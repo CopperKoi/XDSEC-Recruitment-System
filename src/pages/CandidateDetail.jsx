@@ -337,7 +337,7 @@ export default function CandidateDetail() {
         {user.application && (
           <article className="card" onClick={(event) => onCardExpand(event, showApplication, setShowApplication)}>
             <div className="card-header">
-              <h3>简历与报名信息</h3>
+              <h3>个人介绍与报名信息</h3>
               <button
                 type="button"
                 onClick={() => setShowApplication((prev) => !prev)}

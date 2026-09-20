@@ -1,19 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { listUsers } from "../api/users.js";
+import { useAuth } from "../context/AuthContext.jsx";
 import { gravatarUrl } from "../utils/gravatar.js";
 
+const STATUS_LABELS = {
+  r1_pending: "一轮待定",
+  r1_passed: "一轮通过",
+  r2_pending: "二轮待定",
+  r2_passed: "二轮通过",
+  rejected: "已拒绝",
+  offer: "已录取"
+};
+
 export default function UserDirectory() {
+  const { user: currentUser } = useAuth();
   const [role, setRole] = useState("interviewee");
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState("");
-  const statusLabels = {
-    r1_pending: "一轮待定",
-    r1_passed: "一轮通过",
-    r2_pending: "二轮待定",
-    r2_passed: "二轮通过",
-    rejected: "已拒绝",
-    offer: "已录取"
-  };
+  // 面试者之间互不可见面试进度，仅面试官可查看状态与通过方向
+  const canViewInterviewInfo = currentUser?.role === "interviewer";
 
   const load = () => {
     listUsers({ role })
@@ -61,11 +66,11 @@ export default function UserDirectory() {
               {user.directions && (
                 <p>方向：{(user.directions || []).join(", ")}</p>
               )}
-              {user.role === "interviewee" && user.passedDirections && (
-                <p>通过方向：{(user.passedDirections || []).join(", ")}</p>
+              {canViewInterviewInfo && user.role === "interviewee" && user.passedDirections?.length > 0 && (
+                <p>通过方向：{user.passedDirections.join(", ")}</p>
               )}
-              {user.role === "interviewee" && user.status && (
-                <p>状态：{statusLabels[user.status] || user.status}</p>
+              {canViewInterviewInfo && user.role === "interviewee" && user.status && (
+                <p>状态：{STATUS_LABELS[user.status] || user.status}</p>
               )}
             </div>
           </article>

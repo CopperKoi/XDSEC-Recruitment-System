@@ -1,32 +1,45 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { submitApplication, getMyApplication, deleteMyApplication } from "../api/applications.js";
 import MarkdownRenderer from "../components/MarkdownRenderer.jsx";
 
 const DIRECTIONS = ["Web", "Pwn", "Reverse", "Crypto", "Misc", "Dev", "Art"];
 
+const EMPTY_FORM = {
+  realName: "",
+  phone: "",
+  gender: "",
+  department: "",
+  major: "",
+  studentId: "",
+  directions: [],
+  resume: ""
+};
+
 export default function ApplicationForm() {
-  const [form, setForm] = useState({
-    realName: "",
-    phone: "",
-    gender: "",
-    department: "",
-    major: "",
-    studentId: "",
-    directions: [],
-    resume: ""
-  });
-  const [status, setStatus] = useState("");
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [notice, setNotice] = useState(null);
   const [step, setStep] = useState("basic");
+  const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const noticeRef = useRef(null);
 
   useEffect(() => {
     getMyApplication()
       .then((data) => {
         if (data.application) {
           setForm({ ...data.application });
+          setHasSubmitted(true);
         }
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (notice && noticeRef.current) {
+      noticeRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [notice]);
 
   const toggleDirection = (value) => {
     setForm((prev) => {
@@ -46,40 +59,49 @@ export default function ApplicationForm() {
 
   const onSubmit = async (event) => {
     event.preventDefault();
-    setStatus("");
+    if (submitting) {
+      return;
+    }
     if (form.directions.length === 0) {
-      setStatus("请至少选择一个面试方向后再提交。");
+      setNotice({ type: "error", text: "请至少选择一个面试方向后再提交。" });
       setStep("directions");
       return;
     }
+    setSubmitting(true);
+    setNotice(null);
     try {
       await submitApplication(form);
-      setStatus("申请已提交。");
+      setHasSubmitted(true);
+      setNotice({
+        type: "success",
+        text: "申请提交成功！你可以在本页随时补充修改后重新提交。"
+      });
     } catch (error) {
-      setStatus(error.message || "提交失败。");
+      setNotice({ type: "error", text: error.message || "提交失败，请稍后重试。" });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const onDelete = async () => {
-    setStatus("");
+    if (deleting) {
+      return;
+    }
+    setNotice(null);
     if (!window.confirm("确定删除申请吗？此操作不可恢复。")) {
       return;
     }
+    setDeleting(true);
     try {
       await deleteMyApplication();
-      setForm({
-        realName: "",
-        phone: "",
-        gender: "",
-        department: "",
-        major: "",
-        studentId: "",
-        directions: [],
-        resume: ""
-      });
-      setStatus("申请已删除。");
+      setForm(EMPTY_FORM);
+      setHasSubmitted(false);
+      setStep("basic");
+      setNotice({ type: "success", text: "申请已删除。" });
     } catch (error) {
-      setStatus(error.message || "删除失败。");
+      setNotice({ type: "error", text: error.message || "删除失败。" });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -88,11 +110,19 @@ export default function ApplicationForm() {
       <div className="page-header">
         <div className="stack-tight">
           <h1 className="page-title">面试申请</h1>
-          <p className="page-subtitle">填写你的基础信息与方向偏好，简历可用 Markdown。</p>
+          <p className="page-subtitle">填写你的基础信息与方向偏好，个人介绍支持 Markdown。</p>
         </div>
       </div>
       <section className="card profile-shell">
-        {status && <p className="hint">{status}</p>}
+        {notice && (
+          <p
+            ref={noticeRef}
+            className={`notice ${notice.type === "success" ? "notice-success" : "notice-error"}`}
+            role="status"
+          >
+            {notice.text}
+          </p>
+        )}
         <div className="profile-layout">
           <aside className="profile-nav nav-static">
             <button
@@ -187,7 +217,7 @@ export default function ApplicationForm() {
               {step === "directions" && (
                 <>
                   <p className="hint full">
-                    基础资料已填写完成，请在下方选择面试方向并填写简历，之后点击“提交申请”完成投递。
+                    基础资料已填写完成，请在下方选择面试方向并填写个人介绍，之后点击“提交申请”完成投递。
                   </p>
                   <fieldset>
                     <legend>面试方向（可多选）</legend>
@@ -205,7 +235,7 @@ export default function ApplicationForm() {
                     </div>
                   </fieldset>
                   <label className="full">
-                    简历（支持 Markdown，可选）
+                    个人介绍（支持 Markdown，可选）
                     <span className="hint">可填写个人经历、技能与项目作品，下方会实时预览效果。</span>
                     <textarea
                       rows={6}
@@ -220,21 +250,28 @@ export default function ApplicationForm() {
               <div className="form-actions">
                 {step === "basic" ? (
                   <button type="button" onClick={goToDirections}>
-                    下一步：填写方向与简历
+                    下一步：填写方向与个人介绍
                   </button>
                 ) : (
                   <>
-                    <button type="button" onClick={() => setStep("basic")}>
+                    <button type="button" onClick={() => setStep("basic")} disabled={submitting}>
                       上一步
                     </button>
-                    <button type="submit" disabled={form.directions.length === 0}>
-                      提交申请
+                    <button
+                      type="submit"
+                      disabled={form.directions.length === 0 || submitting}
+                    >
+                      {submitting ? "提交中…" : "提交申请"}
                     </button>
-                    <button type="button" onClick={onDelete}>
-                      删除我的申请
+                    <button type="button" onClick={onDelete} disabled={deleting || submitting}>
+                      {deleting ? "删除中…" : "删除我的申请"}
                     </button>
-                    {form.directions.length === 0 && (
+                    {form.directions.length === 0 ? (
                       <span className="hint">请先选择至少一个面试方向</span>
+                    ) : (
+                      hasSubmitted && (
+                        <span className="hint">已提交过申请，重新提交将覆盖原有内容</span>
+                      )
                     )}
                   </>
                 )}
