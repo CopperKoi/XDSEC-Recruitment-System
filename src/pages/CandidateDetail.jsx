@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { gravatarUrl } from "../utils/gravatar.js";
-import { listUsers, updateRole, updatePassedDirections, deleteUser, getUser } from "../api/users.js";
+import { updateRole, updatePassedDirections, deleteUser, getUser } from "../api/users.js";
 import { updateApplicationStatus } from "../api/applications.js";
 import { createComment, deleteComment, listComments, updateComment } from "../api/comments.js";
 import { listTasks } from "../api/tasks.js";
@@ -25,6 +25,7 @@ const STATUS_LABELS = {
   offer: "已录取"
 };
 const DIRECTIONS = ["Web", "Pwn", "Reverse", "Crypto", "Misc", "Dev", "Art"];
+const TERMINAL_STATUSES = ["rejected", "offer"];
 
 export default function CandidateDetail() {
   const { id } = useParams();
@@ -41,6 +42,7 @@ export default function CandidateDetail() {
   const [showTasks, setShowTasks] = useState(false);
   const [showApplication, setShowApplication] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [statusValue, setStatusValue] = useState("");
 
   const onCardExpand = (event, isOpen, setter) => {
     const target = event.target;
@@ -77,6 +79,7 @@ export default function CandidateDetail() {
       const allTasks = taskData.items || [];
       setTasks(allTasks.filter((task) => task.targetUserId === id));
       setPassedInputs(detail.passedDirections || []);
+      setStatusValue(detail.status || "r1_pending");
     } catch (error) {
       setStatus(error.message || "候选人详情加载失败。");
     }
@@ -114,10 +117,20 @@ export default function CandidateDetail() {
 
   const updateStatus = async (nextStatus) => {
     setStatus("");
+    const committed = statusValue || "r1_pending";
+    if (TERMINAL_STATUSES.includes(nextStatus)) {
+      const label = STATUS_LABELS[nextStatus] || nextStatus;
+      if (!window.confirm(`确定将面试状态改为「${label}」吗？此操作不可恢复。`)) {
+        setStatusValue(committed);
+        return;
+      }
+    }
+    setStatusValue(nextStatus);
     try {
       await updateApplicationStatus(id, nextStatus);
       await load();
     } catch (error) {
+      setStatusValue(committed);
       setStatus(error.message || "更新面试状态失败。");
     }
   };
@@ -240,7 +253,7 @@ export default function CandidateDetail() {
               <p className="status-line">
                 面试状态：
                 <select
-                  value={user.status || "r1_pending"}
+                  value={statusValue || "r1_pending"}
                   onChange={(event) => updateStatus(event.target.value)}
                 >
                   {STATUSES.map((item) => (
@@ -316,7 +329,10 @@ export default function CandidateDetail() {
                     {index > 0 && <div className="divider" />}
                     <div className="panel">
                       <h4>{task.title}</h4>
-                      <p className="meta">更新时间 {formatDate(task.updatedAt || task.createdAt)}</p>
+                      <p className="meta">
+                        更新时间 {formatDate(task.updatedAt || task.createdAt)} · 分配人{" "}
+                        {task.assignedBy || "未知"}
+                      </p>
                       <div className="content-gap">
                         <MarkdownRenderer content={task.description || ""} />
                       </div>

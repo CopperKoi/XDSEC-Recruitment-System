@@ -82,10 +82,13 @@ export default function ManageAnnouncements() {
     }
   };
 
-  const onDelete = async (id) => {
+  const onDelete = async (item) => {
     setStatus("");
+    if (!window.confirm(`确定删除公告「${item.title}」吗？此操作不可恢复。`)) {
+      return;
+    }
     try {
-      await deleteAnnouncement(id);
+      await deleteAnnouncement(item.id);
       load();
     } catch (error) {
       setStatus(error.message || "删除公告失败。");
@@ -193,7 +196,7 @@ export default function ManageAnnouncements() {
               <button type="button" onClick={() => onEdit(item)}>
                 编辑
               </button>
-              <button type="button" onClick={() => onDelete(item.id)}>
+              <button type="button" onClick={() => onDelete(item)}>
                 删除
               </button>
             </div>

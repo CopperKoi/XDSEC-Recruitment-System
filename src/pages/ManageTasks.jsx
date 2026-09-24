@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { listTasks, createTask, updateTask, deleteTask } from "../api/tasks.js";
 import { listUsers, getUser } from "../api/users.js";
 import MarkdownRenderer from "../components/MarkdownRenderer.jsx";
 
 export default function ManageTasks() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [form, setForm] = useState({ title: "", description: "", targetUserId: "" });
   const [status, setStatus] = useState("");
@@ -48,12 +49,16 @@ export default function ManageTasks() {
   const onSubmit = async (event) => {
     event.preventDefault();
     setStatus("");
-    if (!form.targetUserId) {
+    // 在 await 之前快照：下面的 setForm / setEditingId("") 会清掉它们，
+    // 而 state 更新是异步的，await 之后再读不可靠
+    const targetUserId = form.targetUserId;
+    const isEditing = Boolean(editingId);
+    if (!targetUserId) {
       setStatus("请选择目标用户。");
       return;
     }
     try {
-      if (editingId) {
+      if (isEditing) {
         await updateTask(editingId, form);
       } else {
         await createTask(form);
@@ -61,9 +66,16 @@ export default function ManageTasks() {
       setForm({ title: "", description: "", targetUserId: "" });
       setSelectedUserName("");
       setEditingId("");
-      load();
+      if (isEditing) {
+        // 改完留在任务页，否则每次保存修改都会把人弹走
+        load();
+      } else {
+        // 创建总是属于「给某个候选人布置任务」（targetUserId 必填），
+        // 所以直接回候选人详情看结果
+        navigate(`/interviewer/candidates/${targetUserId}`);
+      }
     } catch (error) {
-      setStatus(error.message || (editingId ? "任务更新失败。" : "任务创建失败。"));
+      setStatus(error.message || (isEditing ? "任务更新失败。" : "任务创建失败。"));
     }
   };
 
@@ -78,10 +90,13 @@ export default function ManageTasks() {
     setStatus("正在编辑任务，发布后将覆盖原内容。");
   };
 
-  const onDelete = async (taskId) => {
+  const onDelete = async (task) => {
     setStatus("");
+    if (!window.confirm(`确定删除任务「${task.title}」吗？此操作不可恢复。`)) {
+      return;
+    }
     try {
-      await deleteTask(taskId);
+      await deleteTask(task.id);
       load();
     } catch (error) {
       setStatus(error.message || "任务删除失败。");
@@ -173,6 +188,7 @@ export default function ManageTasks() {
             </div>
             <div className="inline-meta">
               <span>目标 {task.targetUserName || task.targetUserId}</span>
+              <span>分配人 {task.assignedBy || "未知"}</span>
               <span>{new Date(task.updatedAt).toLocaleString()}</span>
             </div>
             <div className="card-body">
@@ -188,7 +204,7 @@ export default function ManageTasks() {
             </div>
             <div className="card-actions">
               <button type="button" onClick={() => onEdit(task)}>编辑</button>
-              <button type="button" onClick={() => onDelete(task.id)}>删除</button>
+              <button type="button" onClick={() => onDelete(task)}>删除</button>
             </div>
           </article>
         ))}

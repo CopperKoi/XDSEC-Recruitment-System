@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { listUsers } from "../api/users.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { gravatarUrl } from "../utils/gravatar.js";
-
-const STATUS_LABELS = {
-  r1_pending: "一轮待定",
-  r1_passed: "一轮通过",
-  r2_pending: "二轮待定",
-  r2_passed: "二轮通过",
-  rejected: "已拒绝",
-  offer: "已录取"
-};
+import FilterBuilder from "../components/FilterBuilder.jsx";
+import { FILTER_FIELD_ORDER, formatStatus } from "../utils/recruitmentMeta.js";
+import {
+  applyFilter,
+  createFilterState,
+  findUnavailableFields,
+  getFieldValues
+} from "../utils/filterFields.js";
 
 export default function UserDirectory() {
   const { user: currentUser } = useAuth();
   const [role, setRole] = useState("interviewee");
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState("");
+  const [filter, setFilter] = useState(() => createFilterState());
   // 面试者之间互不可见面试进度，仅面试官可查看状态与通过方向
   const canViewInterviewInfo = currentUser?.role === "interviewer";
 
@@ -29,6 +29,22 @@ export default function UserDirectory() {
   useEffect(() => {
     load();
   }, [role]);
+
+  // 切角色等于换了一个数据集，带着旧筛选过去只会得到一片费解的空列表
+  const firstRoleRun = useRef(true);
+  useEffect(() => {
+    if (firstRoleRun.current) {
+      firstRoleRun.current = false;
+      return;
+    }
+    setFilter(createFilterState());
+  }, [role]);
+
+  const visibleItems = useMemo(() => applyFilter(filter, items), [items, filter]);
+  const unavailableFields = useMemo(
+    () => findUnavailableFields(filter, items, FILTER_FIELD_ORDER),
+    [filter, items]
+  );
 
   return (
     <section className="page">
@@ -45,8 +61,26 @@ export default function UserDirectory() {
         </div>
       </div>
       {status && <p className="hint">{status}</p>}
+      {canViewInterviewInfo && (
+        <>
+          <FilterBuilder
+            value={filter}
+            onChange={setFilter}
+            hint="按申请方向、通过方向、面试状态、真实姓名、手机号码、学号筛选当前角色下已加载的成员。"
+            unavailableFields={unavailableFields}
+          />
+          <p className="meta">共 {visibleItems.length} / {items.length} 位成员</p>
+          {items.length > 0 && visibleItems.length === 0 && (
+            <p className="hint">
+              {role === "interviewer"
+                ? "没有符合条件的成员。面试官通常没有报名信息（真实姓名 / 手机号码 / 学号 / 面试状态 / 通过方向 可能为空），请尝试移除相关条件或重置筛选。"
+                : "没有符合条件的成员，请调整或重置筛选条件。"}
+            </p>
+          )}
+        </>
+      )}
       <div className="grid two">
-        {items.map((user) => (
+        {visibleItems.map((user) => (
           <article key={user.id} className="card">
             <div className="stack-tight">
               <h3 className="card-title">{user.nickname || "匿名用户"}</h3>
@@ -63,14 +97,14 @@ export default function UserDirectory() {
               </div>
             </div>
             <div className="card-body">
-              {user.directions && (
-                <p>方向：{(user.directions || []).join(", ")}</p>
+              {getFieldValues(user, "direction").length > 0 && (
+                <p>方向：{getFieldValues(user, "direction").join(", ")}</p>
               )}
               {canViewInterviewInfo && user.role === "interviewee" && user.passedDirections?.length > 0 && (
                 <p>通过方向：{user.passedDirections.join(", ")}</p>
               )}
               {canViewInterviewInfo && user.role === "interviewee" && user.status && (
-                <p>状态：{STATUS_LABELS[user.status] || user.status}</p>
+                <p>状态：{formatStatus(user.status)}</p>
               )}
             </div>
           </article>

@@ -1294,6 +1294,131 @@ main.container {
   }
 }
 
+/* ---- 筛选器 ---- */
+
+.filter-panel {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.filter-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.filter-rows {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.filter-rows.is-locked {
+  opacity: 0.7;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-1);
+  background: color-mix(in srgb, var(--page-bg-soft) 45%, var(--page-surface));
+}
+
+.filter-connector {
+  flex: 0 0 auto;
+  min-width: 104px;
+}
+
+.filter-field {
+  flex: 1 1 150px;
+}
+
+.filter-op {
+  flex: 0 0 auto;
+  min-width: 116px;
+}
+
+.filter-values {
+  flex: 3 1 300px;
+  display: grid;
+  gap: var(--space-2);
+  align-content: end;
+}
+
+.filter-row-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-left: auto;
+}
+
+.filter-row-remove {
+  background: none;
+  color: var(--error);
+  padding: 0;
+  font-weight: 600;
+  border: none;
+  box-shadow: none;
+}
+
+.filter-row-remove:hover:not(:disabled),
+.filter-row-remove:active:not(:disabled) {
+  background: none;
+  color: var(--error);
+  text-decoration: underline;
+}
+
+.filter-row-remove:disabled {
+  background: none;
+  color: var(--text-muted);
+}
+
+/* .tags 的列数是给 7 个方向写死的，面试状态只有 6 项，
+   所以用修饰类改成自适应，不去动 .tags 本身（另有 5 处在用） */
+.tags.filter-tags {
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+}
+
+.tag.tag-unknown {
+  background: color-mix(in srgb, var(--error) 16%, var(--page-surface));
+  color: var(--error);
+}
+
+.filter-expression {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.filter-expression-input {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.filter-expression-input[aria-invalid="true"] {
+  border-color: var(--error);
+}
+
+.filter-expression-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filter-takeover {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-1);
+  background: color-mix(in srgb, var(--brand-soft) 40%, var(--page-surface));
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -1331,5 +1456,15 @@ main.container {
 
   .form-card {
     width: 100%;
+  }
+
+  .filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-row-actions {
+    margin-left: 0;
+    justify-content: flex-end;
   }
 }
